@@ -1,0 +1,87 @@
+service: backend-boilerplate-v1 #TODO: change project name
+
+frameworkVersion: '3'
+
+# =========================================================================================
+# Functions - Add function modules here
+# =========================================================================================
+functions:
+  - ${file(src/api.yml)}
+
+# =========================================================================================
+# Custom Configs
+# =========================================================================================
+custom:
+  defaults:
+    # NOTE: Available Stages: development, staging, production
+    stage: development
+    region: us-east-1
+    runtime: nodejs14.x
+
+  prune:
+    automatic: true
+    includeLayers: true
+    number: 3
+
+  serverless-offline:
+    httpPort: 9000
+    noPrependStageInUrl: true
+
+  stages:
+    - development
+    - staging
+    - production
+
+  # Development Stage Config
+  development:
+    logLevel: debug
+    timeout: 30
+    memorySize: 256
+    logRetentionInDays: 1
+
+  # Staging Stage Config
+  staging:
+    logLevel: debug
+    timeout: 30
+    memorySize: 256
+    logRetentionInDays: 7
+
+  # Production Stage Config
+  production:
+    timeout: 30
+    memorySize: 512
+    logRetentionInDays: 90
+
+provider:
+  name: aws
+  stage: ${opt:stage, self:custom.defaults.stage}
+  stackName: ${self:service}
+  region: ${opt:region, self:custom.defaults.region}
+  logRetentionInDays: ${self:custom.${self:provider.stage}.logRetentionInDays}
+  tracing:
+    apiGateway: true
+    lambda: true
+
+  # Deployment bucket
+  deploymentPrefix: ${self:service}
+  deploymentBucket:
+    name: com.serverless.${self:service}.deploys
+    maxPreviousDeploymentArtifacts: 10
+
+  # Function settings
+  runtime: ${self:custom.defaults.runtime}
+  timeout: ${self:custom.${self:provider.stage}.timeout}
+  memorySize: ${self:custom.${self:provider.stage}.memorySize}
+
+  # Environment variable
+  environment:
+    APP_ENV_VARIABLE: ENV_VAR #TODO: add env variable
+
+package:
+  individually: true
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-stage-manager
+  - serverless-prune-plugin
+  - serverless-offline

@@ -62,10 +62,9 @@ provider:
     lambda: true
 
   # Deployment bucket
-  deploymentPrefix: ${self:service}
   deploymentBucket:
-    name: com.serverless.${self:service}.deploys
-    maxPreviousDeploymentArtifacts: 10
+    name: deploys.${self:service}
+    maxPreviousDeploymentArtifacts: 5
     serverSideEncryption: AES256
 
   # Function settings

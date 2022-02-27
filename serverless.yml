@@ -34,14 +34,12 @@ custom:
 
   # Development Stage Config
   development:
-    logLevel: debug
     timeout: 30
     memorySize: 256
     logRetentionInDays: 1
 
   # Staging Stage Config
   staging:
-    logLevel: debug
     timeout: 30
     memorySize: 256
     logRetentionInDays: 7
@@ -53,6 +51,7 @@ custom:
     logRetentionInDays: 90
 
 provider:
+  profile: personal #change it according to your profile name
   name: aws
   stage: ${opt:stage, self:custom.defaults.stage}
   stackName: ${self:service}
@@ -67,6 +66,7 @@ provider:
   deploymentBucket:
     name: com.serverless.${self:service}.deploys
     maxPreviousDeploymentArtifacts: 10
+    serverSideEncryption: AES256
 
   # Function settings
   runtime: ${self:custom.defaults.runtime}
@@ -84,4 +84,6 @@ plugins:
   - serverless-plugin-typescript
   - serverless-stage-manager
   - serverless-prune-plugin
+  - serverless-plugin-optimize
+  - serverless-deployment-bucket
   - serverless-offline

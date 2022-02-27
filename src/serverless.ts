@@ -1,14 +1,34 @@
-import { ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import serverlessExpress from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
+
 import { AppModule } from './app.module';
 
 let server: Handler;
 
 async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.useGlobalPipes(new ValidationPipe());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: (errors: ValidationError[]): unknown =>
+        new BadRequestException(errors),
+      transform: true,
+      whitelist: true,
+      dismissDefaultMessages: false,
+      forbidUnknownValues: true,
+      forbidNonWhitelisted: true,
+      validationError: {
+        target: true,
+        value: true,
+      },
+    }),
+  );
 
   await app.init();
 
